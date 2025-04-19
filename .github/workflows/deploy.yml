@@ -33,7 +33,7 @@ jobs:
 
       # - name: Update kubeconfig
       #   run: |
-      #     aws eks update-kubeconfig --region ${{ secrets.AWS_REGION }} --name particle41_eks
+      #     aws eks update-kubeconfig --region ${{ secrets.AWS_REGION }} --name ${{ secrets.AWS_EKS_NAME }}
 
       # - name: Deploy to EKS
       #   run: |

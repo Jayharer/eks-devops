@@ -3,7 +3,7 @@ kind: Deployment
 metadata:
   name: myapp
 spec:
-  replicas: 2
+  replicas: 1
   selector:
     matchLabels:
       app: myapp
@@ -14,6 +14,6 @@ spec:
     spec:
       containers:
         - name: myapp
-          image: <your-ecr-uri>:latest
+          image: 861936062471.dkr.ecr.us-east-1.amazonaws.com/particle41_ecr_repo:myapp
           ports:
-            - containerPort: 80
+            - containerPort: 8080
