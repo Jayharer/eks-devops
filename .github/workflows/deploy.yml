@@ -57,7 +57,12 @@ jobs:
     - name: Export Terraform outputs
       id: export 
       run: |
-        echo "AWS_ECR_REPO_URL=$(terraform output -raw AWS_ACCOUNT_ID | cut -d: -f1).dkr.ecr.${{ secrets.AWS_REGION}}.amazonaws.com/$(terraform output -raw AWS_ECR_REPO_NAME | cut -d: -f1)" >> $GITHUB_OUTPUT
+        ACCOUNT_ID=$(terraform output -raw AWS_ACCOUNT_ID)
+        REPO_NAME=$(terraform output -raw AWS_ECR_REPO_NAME)
+        REGION=${{ secrets.AWS_REGION }} # replace with your actual region
+        ECR_URL="${ACCOUNT_ID}.dkr.ecr.${REGION}.amazonaws.com/${REPO_NAME}"
+        SAFE_ECR_URL="${ECR_URL//::/__}"  # replace "::" to prevent GitHub Actions from breaking
+        echo "AWS_ECR_REPO_URL=$SAFE_ECR_URL" >> $GITHUB_OUTPUT
 
   deploy:
     runs-on: ubuntu-latest
