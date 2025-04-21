@@ -82,7 +82,7 @@ jobs:
 
       - name: Login to Amazon ECR
         run: |
-          aws ecr get-login-password --region ${{ secrets.AWS_REGION }} | docker login --username AWS --password-stdin ${{ needs.terraform.outputs.AWS_ECR_REPO_URL | cut -d/ f1}}
+          aws ecr get-login-password --region ${{ secrets.AWS_REGION }} | docker login --username AWS --password-stdin $(needs.terraform.outputs.AWS_ECR_REPO_URL | cut -d/ f1)
 
       - name: Build and Push Docker Image
         run: |
