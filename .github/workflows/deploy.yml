@@ -56,8 +56,8 @@ jobs:
     - name: Export Terraform outputs
       id: export 
       run: |
-        echo "AWS_ECR_REPO_NAME=$(terraform output -raw AWS_ECR_REPO_NAME)" >> "$GITHUB_OUTPUT"
-        echo "AWS_ACCOUNT_ID=$(terraform output -raw AWS_ACCOUNT_ID)" >> "$GITHUB_OUTPUT"
+        echo "AWS_ECR_REPO_NAME=$(terraform output AWS_ECR_REPO_NAME)" >> "$GITHUB_OUTPUT"
+        echo "AWS_ACCOUNT_ID=$(terraform output AWS_ACCOUNT_ID)" >> "$GITHUB_OUTPUT"
   deploy:
     runs-on: ubuntu-latest
     env:
