@@ -7,8 +7,8 @@ resource "aws_ecr_repository" "particle41_ecr_repo" {
   }
 }
 
-output "AWS_ECR_REPO_URL" {
-  value = aws_ecr_repository.particle41_ecr_repo.repository_url
+output "AWS_ACCOUNT_ID" {
+  value = data.aws_caller_identity.current.account_id
 }
 
 output "AWS_ECR_REPO_NAME" {

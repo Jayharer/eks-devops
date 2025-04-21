@@ -57,7 +57,9 @@ jobs:
     - name: Export Terraform outputs
       id: export 
       run: |
-        echo "AWS_ECR_REPO_URL=$(terraform output -raw AWS_ECR_REPO_URL | cut -d: -f1)" >> $GITHUB_OUTPUT
+        ecr_repo_name = $(terraform output -raw AWS_ECR_REPO_NAME)
+        ecr_repo_url = echo "$(terraform output -raw AWS_ACCOUNT_ID).dkr.ecr.${{ secrets.AWS_REGION}}.amazonaws.com/$ecr_repo_name"
+        echo "AWS_ECR_REPO_URL=$ecr_repo_url" >> $GITHUB_OUTPUT
 
   deploy:
     runs-on: ubuntu-latest
