@@ -23,4 +23,5 @@ USER fastapiuser
 # Expose app port
 EXPOSE 8080
 
+# run application on 8080 port
 CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8080"]

@@ -1,6 +1,6 @@
 # eks cluster
-resource "aws_eks_cluster" "particle41_eks" {
-  name     = "particle41_eks"
+resource "aws_eks_cluster" "particle41-eks" {
+  name     = var.eks_cluster_name
   role_arn = aws_iam_role.eks_cluster_role.arn
   version  = "1.31"
 
@@ -18,21 +18,21 @@ resource "aws_eks_cluster" "particle41_eks" {
   ]
 
   tags = {
-    Name = "particle41_eks"
+    Name = var.eks_cluster_name
   }
 }
 
 # add access entry for admin user
 resource "aws_eks_access_entry" "access_entry" {
-  cluster_name      = aws_eks_cluster.particle41_eks.name
+  cluster_name      = aws_eks_cluster.particle41-eks.name
   principal_arn     = var.AWS_ADMIN_USER_ARN
   kubernetes_groups = ["masters"]
   type              = "STANDARD"
 }
 
 # for admin user grant permissions on user 
-resource "aws_eks_access_policy_association" "example" {
-  cluster_name  = aws_eks_cluster.particle41_eks.name
+resource "aws_eks_access_policy_association" "eks_admin_policy_association" {
+  cluster_name  = aws_eks_cluster.particle41-eks.name
   policy_arn    = "arn:aws:eks::aws:cluster-access-policy/AmazonEKSClusterAdminPolicy"
   principal_arn = var.AWS_ADMIN_USER_ARN
 
@@ -43,7 +43,7 @@ resource "aws_eks_access_policy_association" "example" {
 
 # eks cluster node group
 resource "aws_eks_node_group" "node_group" {
-  cluster_name    = aws_eks_cluster.particle41_eks.name
+  cluster_name    = aws_eks_cluster.particle41-eks.name
   node_group_name = "node_group"
   node_role_arn   = aws_iam_role.eks_node_role.arn 
   subnet_ids      = [aws_subnet.private_subet_a.id, aws_subnet.private_subet_b.id]

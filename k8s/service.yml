@@ -1,11 +1,13 @@
+# creating service for myapp deployment of type ClusterIP
 apiVersion: v1
 kind: Service
 metadata:
   name: myapp-service
+  namespace: app-space
 spec:
   selector:
     app: myapp
   ports:
     - port: 80
-      targetPort: 80
-  type: NodePort
+      targetPort: 8080
+  type: ClusterIP

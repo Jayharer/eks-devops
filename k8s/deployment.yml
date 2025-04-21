@@ -1,7 +1,15 @@
+# create namespace 
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: app-space
+---
+# create deployment
 apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: myapp
+  namespace: app-space
 spec:
   replicas: 1
   selector:
@@ -17,3 +25,4 @@ spec:
           image: 861936062471.dkr.ecr.us-east-1.amazonaws.com/particle41_ecr_repo:myapp
           ports:
             - containerPort: 8080
+          # imagePullPolicy: Always
