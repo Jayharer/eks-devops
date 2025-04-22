@@ -48,6 +48,10 @@ jobs:
         infra_output=$(echo "$outputs" | jq -c .infrastructure_output.value)
         echo "infrastructure_output=$infra_output" >> $GITHUB_OUTPUT
         echo "$infra_output"
+    
+    - name: op check
+      run: |
+        echo "${{ steps.export.outputs.infrastructure_output}}"
 
     outputs:
         infrastructure_output: ${{steps.export.outputs.infrastructure_output}}
