@@ -68,11 +68,11 @@ jobs:
         run: |
           aws ecr get-login-password --region ${{ secrets.AWS_REGION }} | docker login --username AWS --password-stdin $ECR_REPO_URI 
 
-      # - name: Build and Push Docker Image
-      #   run: |
-      #     docker build -t myapp ./app/
-      #     docker tag myapp:latest ${{steps.export.outputs.ecr_repo_uri}}:myapp
-      #     docker push ${{steps.export.outputs.ecr_repo_uri}}:myapp
+      - name: Build and Push Docker Image
+        run: |
+          docker build -t myapp ./app/
+          docker tag myapp:latest  $ECR_REPO_URI:myapp
+          docker push  $ECR_REPO_URI:myapp
 
       # - name: Update kubeconfig
       #   run: |
