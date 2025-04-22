@@ -83,6 +83,11 @@ jobs:
         run: |
           aws eks update-kubeconfig --region $aws_region --name $cluster_name
       
+      - name: Install eksctl
+        run: |
+          curl --silent --location "https://github.com/weaveworks/eksctl/releases/latest/download/eksctl_$(uname -s)_amd64.tar.gz" | tar xz -C /tmp
+          sudo mv /tmp/eksctl /usr/local/bin
+      
       - name: associate-iam-oidc-provider
         run: |
           eksctl utils associate-iam-oidc-provider --cluster $cluster_name --approve
@@ -90,6 +95,9 @@ jobs:
       - name: create iamserviceaccount and iam role 
         run: |
           eksctl create iamserviceaccount --cluster=$cluster_name --namespace=kube-system --name=aws-alb-controller --role-name ALBControllerIAMRole --attach-policy-arn=arn:aws:iam::$aws_account_id:policy/ALBControllerIAMPolicy --override-existing-serviceaccounts  --region $aws_region --approve
+      
+      - name: Install Helm
+        uses: azure/setup-helm@v3
       
       - name: Install aws-load-balancer-controller
         run: |
