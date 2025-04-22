@@ -3,6 +3,10 @@ name: Deploy to EKS
 on:
   push:
     branches: [main]
+    paths:
+      - 'terraform/**'
+      - 'k8s/**'
+      - 'app/**'
 
 jobs:
   # terraform apply/destroy
