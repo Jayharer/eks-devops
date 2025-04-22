@@ -49,7 +49,11 @@ jobs:
       - name: Outputs from terraform
         run: |
           ecr_repo_uri="${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ secrets.AWS_REGION }}.amazonaws.com/${{ secrets.ECR_REPO_NAME }}"
-          echo "User : $ecr_repo_uri"
+          echo "ECR_REPO_URI=${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ secrets.AWS_REGION }}.amazonaws.com/${{ secrets.ECR_REPO_NAME }}" >> $GITHUB_ENV
+
+      - name: Use ECR URI
+        run: |
+          echo "Using ECR URI: $ECR_REPO_URI"
 
 
   #     - name: Checkout Code
