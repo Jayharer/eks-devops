@@ -48,8 +48,9 @@ jobs:
 
       - name: Outputs from terraform
         run: |
-          ecr_repo_uri = echo "${{secrets.AWS_ACCOUNT_ID}}.dkr.ecr.${{secrets.AWS_REGION}}.amazonaws.com/${{secrets.ECR_REPO_NAME}}"
+          ecr_repo_uri="${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ secrets.AWS_REGION }}.amazonaws.com/${{ secrets.ECR_REPO_NAME }}"
           echo "User : $ecr_repo_uri"
+
 
   #     - name: Checkout Code
   #       uses: actions/checkout@v3
