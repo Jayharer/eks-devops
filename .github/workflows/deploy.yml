@@ -41,11 +41,11 @@ jobs:
       run: terraform validate
 
     - name: Terraform Plan
-      run: terraform plan -out "plan.out"
+      run: terraform plan
 
     - name: Execute Terraform Apply
       run: |
-          terraform apply plan.out -auto-approve
+          terraform apply -auto-approve
 
     - name: Handle output
       id: export 
