@@ -45,17 +45,17 @@ jobs:
       id: export 
       run: |
         outputs=$(terraform output -json)
-        infra_output=$(echo "$outputs" | jq -c .infrastructure_output.value.ecr_repo_name)
-        echo "infrastructure_output=$infra_output" >> $GITHUB_OUTPUT
+        ecr_repo_url_op=$(echo "$outputs" | jq -c .infrastructure_output.value.ecr_repo_url)
+        echo "ecr_repo_url=$ecr_repo_url_op" >> $GITHUB_OUTPUT
         echo "username=jay" >> $GITHUB_OUTPUT
-        echo "$infra_output"
+        echo "$ecr_repo_url_op"
     
     - name: op check
       run: |
-        echo "${{ steps.export.outputs.infrastructure_output}}"
+        echo "${{ steps.export.outputs.ecr_repo_url_op}}"
 
     outputs:
-        infrastructure_output: ${{steps.export.outputs.infrastructure_output}}
+        ecr_repo_url: ${{steps.export.outputs.ecr_repo_url_op}}
         username:  ${{steps.export.outputs.username}}
   
   deploy:
@@ -65,7 +65,7 @@ jobs:
 
       - name: Outputs from terraform
         run: |
-          echo "Terraform : ${{ needs.terraform.outputs.infrastructure_output }}"
+          echo "Terraform : ${{ needs.terraform.outputs.ecr_repo_url }}"
           echo "User : ${{ needs.terraform.outputs.username }}"
 
   #     - name: Checkout Code
