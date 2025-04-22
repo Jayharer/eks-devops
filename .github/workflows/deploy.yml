@@ -48,11 +48,16 @@ jobs:
 
       - name: Output ECR Repo URI 
         run: |
-          echo "ECR_REPO_URI=${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ secrets.AWS_REGION }}.amazonaws.com/${{ secrets.ECR_REPO_NAME }}" >> $GITHUB_ENV
+          echo "ECR_REPO_URI=${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ secrets.AWS_REGION }}.amazonaws.com/${{ secrets.ECR_REPO_NAME }}" >> $GITHUB_ENV 
+          echo "cluster_name=${{secrets.AWS_EKS_NAME}}" >> $GITHUB_ENV
+          echo "aws_region=${{secrets.AWS_REGION}}" >> $GITHUB_ENV
+          echo "aws_account_id=${{secrets.AWS_ACCOUNT_ID}}" >> $GITHUB_ENV
+          echo "vpc_id=$(aws eks describe-cluster --name $cluster_name --query "cluster.resourcesVpcConfig.vpcId" --output text)"
 
       - name: Print ECR URI
         run: |
           echo "Using ECR URI: $ECR_REPO_URI"
+          echo "vpc_id: $vpc_id"
 
       - name: Checkout Code
         uses: actions/checkout@v3
@@ -74,28 +79,24 @@ jobs:
           docker tag myapp:latest  $ECR_REPO_URI:myapp
           docker push  $ECR_REPO_URI:myapp
 
-      # - name: Update kubeconfig
-      #   run: |
-      #     export cluster_name=${{ AWS_EKS_CLUSTER_NAME}}
-      #     export vpc_id=$(aws eks describe-cluster --name $cluster_name --query "cluster.resourcesVpcConfig.vpcId" --output text)
-      #     export aws_account_id = $(aws eks describe-cluster --name $cluster_name --query "cluster.arn" --output text  | cut -d: -f5)
-          
-      #     echo "cluster_name : $cluster_name"
-      #     echo "vpc_id : $vpc_id"
-      #     echo "aws_account_id : $aws_account_id"
+      - name: Update kubeconfig 
+        run: |
+          aws eks update-kubeconfig --region $aws_region --name $cluster_name
+      
+      - name: associate-iam-oidc-provider
+        run: |
+          eksctl utils associate-iam-oidc-provider --cluster $cluster_name --approve
 
-      #     aws eks update-kubeconfig --region ${{ secrets.AWS_REGION }} --name ${{ secrets.AWS_EKS_NAME }}
-      #     eksctl utils associate-iam-oidc-provider --cluster $cluster_name --approve
+      - name: create iamserviceaccount and iam role 
+        run: |
+          eksctl create iamserviceaccount --cluster=$cluster_name --namespace=kube-system --name=aws-alb-controller --role-name ALBControllerIAMRole --attach-policy-arn=arn:aws:iam::$aws_account_id:policy/ALBControllerIAMPolicy --override-existing-serviceaccounts  --region $aws_region --approve
+      
+      - name: Install aws-load-balancer-controller
+        run: |
+          helm repo add eks https://aws.github.io/eks-charts
+          helm repo update eks 
+          helm install aws-load-balancer-controller eks/aws-load-balancer-controller -n kube-system --set clusterName=$cluster_name --set serviceAccount.create=false --set serviceAccount.name=aws-alb-controller --set region=$aws_region --set vpcId=$vpc_id
 
-      #     eksctl create iamserviceaccount --cluster=$cluster_name --namespace=kube-system --name=aws-alb-controller --role-name ALBControllerIAMRole --attach-policy-arn=arn:aws:iam::$aws_account_id:policy/ALBControllerIAMPolicy --override-existing-serviceaccounts  --region ${{ secrets.AWS_REGION }} --approve
-
-      #     helm repo add eks https://aws.github.io/eks-charts
-
-      #     helm repo update eks 
-
-      #     helm install aws-load-balancer-controller eks/aws-load-balancer-controller -n kube-system --set clusterName=particle41-eks --set serviceAccount.create=false --set serviceAccount.name=aws-alb-controller --set region=us-east-1 --set vpcId=$vpc_id
-
-      # - name: Deploy to EKS
-      #   run: |
-      #     kubectl apply -f k8s/
-
+      - name: Deploy to EKS
+        run: |
+          kubectl apply -f k8s/
