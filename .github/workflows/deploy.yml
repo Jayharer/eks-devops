@@ -49,18 +49,19 @@ jobs:
         echo "$outputs"
 
     outputs:
-        infrastructure_output: ${{ steps.export.outputs.infrastructure_output }}
+        infrastructure_output: ${{steps.export.outputs.infrastructure_output}}
   
-  # deploy:
-  #   runs-on: ubuntu-latest
-  #   needs: terraform
-  #   steps:
+  deploy:
+    runs-on: ubuntu-latest
+    needs: terraform
+    steps:
 
-  #     - name: Outputs from terraform
-  #       id: export 
-  #       run: |
-  #         ecr_repo_uri=$(echo ${{ needs.terraform.outputs.infrastructure_output }} | jq -r .ecr_repo_url | cut -d/ -f1)
-  #         echo "ecr_repo_uri=$ecr_repo_uri" >> $GITHUB_OUTPUT
+      - name: Outputs from terraform
+        id: export 
+        run: |
+          echo "${{ needs.terraform.outputs.infrastructure_output }}"
+          ecr_repo_uri=$(echo ${{ needs.terraform.outputs.infrastructure_output }} | jq -r .ecr_repo_url | cut -d/ -f1)
+          echo "ecr_repo_uri=$ecr_repo_uri" >> $GITHUB_OUTPUT
 
   #     - name: Checkout Code
   #       uses: actions/checkout@v3
