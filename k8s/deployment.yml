@@ -22,7 +22,7 @@ spec:
     spec:
       containers:
         - name: myapp
-          image: fake_app_image # 861936062471.dkr.ecr.us-east-1.amazonaws.com/particle41_ecr_repo:myapp
+          image: ecr_repo_uri:myapp # 861936062471.dkr.ecr.us-east-1.amazonaws.com/particle41_ecr_repo:myapp
           ports:
             - containerPort: 8080
           # imagePullPolicy: Always
