@@ -58,9 +58,8 @@ jobs:
     steps:
 
       - name: Outputs from terraform
-        id: export 
         run: |
-          echo "Terraform output: ${{ needs.terraform.outputs.infrastructure_output }}"
+          echo "Terraform : ${{ needs.terraform.outputs.infrastructure_output }}"
 
   #     - name: Checkout Code
   #       uses: actions/checkout@v3
