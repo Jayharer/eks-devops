@@ -45,7 +45,7 @@ jobs:
       id: export 
       run: |
         outputs=$(terraform output -json)
-        infra_output=$(echo "$outputs" | jq -c .infrastructure_output.value)
+        infra_output=$(echo "$outputs" | jq -c .infrastructure_output.value.ecr_repo_name)
         echo "infrastructure_output=$infra_output" >> $GITHUB_OUTPUT
         echo "username=jay" >> $GITHUB_OUTPUT
         echo "$infra_output"
