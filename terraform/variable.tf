@@ -17,3 +17,10 @@ variable "eks_cluster_name" {
   # default = "particle41-eks"
 }
 
+variable "ecr_repo_name" {
+  description = "The name of the ECR repository"
+  type        = string
+  # default = "particle41_ecr_repo"
+}
+
+

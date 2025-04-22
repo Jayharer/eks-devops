@@ -40,23 +40,6 @@ jobs:
     - name: Execute Terraform Apply
       run: |
           terraform apply -auto-approve
-
-    - name: Handle output
-      id: export 
-      run: |
-        outputs=$(terraform output -json)
-        ecr_repo_url_op=$(echo "$outputs" | jq -c .infrastructure_output.value.ecr_repo_url)
-        echo "ecr_repo_url=$ecr_repo_url_op" >> $GITHUB_OUTPUT
-        echo "username=jay" >> $GITHUB_OUTPUT
-        echo "$ecr_repo_url_op"
-    
-    - name: op check
-      run: |
-        echo "${{ steps.export.outputs.ecr_repo_url_op}}"
-
-    outputs:
-        ecr_repo_url: ${{steps.export.outputs.ecr_repo_url_op}}
-        username:  ${{steps.export.outputs.username}}
   
   deploy:
     runs-on: ubuntu-latest
@@ -65,8 +48,8 @@ jobs:
 
       - name: Outputs from terraform
         run: |
-          echo "Terraform : ${{ needs.terraform.outputs.ecr_repo_url }}"
-          echo "User : ${{ needs.terraform.outputs.username }}"
+          ecr_repo_uri = echo "${{secrets.AWS_ACCOUNT_ID}}.dkr.ecr.${{secrets.AWS_REGION}}.amazonaws.com/${{ECR_REPO_NAME}}"
+          echo "User : $ecr_repo_uri"
 
   #     - name: Checkout Code
   #       uses: actions/checkout@v3
@@ -113,121 +96,3 @@ jobs:
       #   run: |
       #     kubectl apply -f k8s/
 
-
-#=============================================================================
-# name: Deploy to EKS
-
-# on:
-#   push:
-#     branches: [main]
-
-#   workflow_call:
-#     outputs:
-#       infrastructure_output:
-#         description: Output from Terraform
-#         value: ${{ jobs.terraform.outputs.infrastructure_output }}
-
-# jobs:
-#   # terraform apply/destroy
-#   terraform:
-#     runs-on: ubuntu-latest
-#     defaults:
-#       run:
-#         working-directory: ./terraform
-#     steps:
-#     - name: Checkout repository
-#       uses: actions/checkout@v2
-
-#     - name: Configure AWS credentials
-#       uses: aws-actions/configure-aws-credentials@v1
-#       with:
-#         aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-#         aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-#         aws-region: ${{ secrets.AWS_REGION }}
-
-#     - name: Set up Terraform
-#       uses: hashicorp/setup-terraform@v1
-#       with:
-#         terraform_version: 1.6.6
-#         terraform_wrapper: false
-
-#     - name: Initialize Terraform
-#       run: terraform init
-
-#     - name: Validate Terraform
-#       run: terraform validate
-
-#     - name: Terraform Plan
-#       run: terraform plan
-
-#     - name: Execute Terraform Apply
-#       run: |
-#           terraform apply -auto-approve
-
-#     - name: Handle output
-#       id: export 
-#       run: |
-#         outputs=$(terraform output infrastructure_output)
-#         echo "infrastructure_output=$outputs" >> $GITHUB_OUTPUT  
-
-#     outputs:
-#         infrastructure_output: ${{ steps.export.outputs.infrastructure_output }}
-  
-#   deploy:
-#     runs-on: ubuntu-latest
-#     needs: terraform
-#     steps:
-
-#       - name: Outputs from terraform
-#         id: export 
-#         run: |
-#           ecr_repo_uri=$(echo ${{ needs.terraform.outputs.infrastructure_output }} | jq -r .ecr_repo_url | cut -d/ -f1)
-#           echo "ecr_repo_uri=$ecr_repo_uri" >> $GITHUB_OUTPUT
-
-#       - name: Checkout Code
-#         uses: actions/checkout@v3
-
-#       - name: Configure AWS credentials
-#         uses: aws-actions/configure-aws-credentials@v2
-#         with:
-#           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-#           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-#           aws-region: ${{ secrets.AWS_REGION }}
-
-#       - name: Login to Amazon ECR
-#         run: |
-#           aws ecr get-login-password --region ${{ secrets.AWS_REGION }} | docker login --username AWS --password-stdin ${{steps.export.outputs.ecr_repo_uri}}
-
-#       - name: Build and Push Docker Image
-#         run: |
-#           docker build -t myapp ./app/
-#           docker tag myapp:latest ${{steps.export.outputs.ecr_repo_uri}}:myapp
-#           docker push ${{steps.export.outputs.ecr_repo_uri}}:myapp
-
-      # - name: Update kubeconfig
-      #   run: |
-      #     export cluster_name=${{ AWS_EKS_CLUSTER_NAME}}
-      #     export vpc_id=$(aws eks describe-cluster --name $cluster_name --query "cluster.resourcesVpcConfig.vpcId" --output text)
-      #     export aws_account_id = $(aws eks describe-cluster --name $cluster_name --query "cluster.arn" --output text  | cut -d: -f5)
-          
-      #     echo "cluster_name : $cluster_name"
-      #     echo "vpc_id : $vpc_id"
-      #     echo "aws_account_id : $aws_account_id"
-
-      #     aws eks update-kubeconfig --region ${{ secrets.AWS_REGION }} --name ${{ secrets.AWS_EKS_NAME }}
-      #     eksctl utils associate-iam-oidc-provider --cluster $cluster_name --approve
-
-      #     eksctl create iamserviceaccount --cluster=$cluster_name --namespace=kube-system --name=aws-alb-controller --role-name ALBControllerIAMRole --attach-policy-arn=arn:aws:iam::$aws_account_id:policy/ALBControllerIAMPolicy --override-existing-serviceaccounts  --region ${{ secrets.AWS_REGION }} --approve
-
-      #     helm repo add eks https://aws.github.io/eks-charts
-
-      #     helm repo update eks 
-
-      #     helm install aws-load-balancer-controller eks/aws-load-balancer-controller -n kube-system --set clusterName=particle41-eks --set serviceAccount.create=false --set serviceAccount.name=aws-alb-controller --set region=us-east-1 --set vpcId=$vpc_id
-
-      # - name: Deploy to EKS
-      #   run: |
-      #     kubectl apply -f k8s/
-
-
-# aws ecr get-login-password --region us-east-1 | docker login --username AWS 861936062471.dkr.ecr.us-east-1.amazonaws.com/particle41_ecr_repo
