@@ -46,35 +46,33 @@ jobs:
     needs: terraform
     steps:
 
-      - name: Outputs from terraform
+      - name: Output ECR Repo URI 
         run: |
-          ecr_repo_uri="${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ secrets.AWS_REGION }}.amazonaws.com/${{ secrets.ECR_REPO_NAME }}"
           echo "ECR_REPO_URI=${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ secrets.AWS_REGION }}.amazonaws.com/${{ secrets.ECR_REPO_NAME }}" >> $GITHUB_ENV
 
-      - name: Use ECR URI
+      - name: Print ECR URI
         run: |
           echo "Using ECR URI: $ECR_REPO_URI"
 
+      - name: Checkout Code
+        uses: actions/checkout@v3
 
-  #     - name: Checkout Code
-  #       uses: actions/checkout@v3
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v2
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ secrets.AWS_REGION }}
 
-  #     - name: Configure AWS credentials
-  #       uses: aws-actions/configure-aws-credentials@v2
-  #       with:
-  #         aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-  #         aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-  #         aws-region: ${{ secrets.AWS_REGION }}
+      - name: Login to Amazon ECR
+        run: |
+          aws ecr get-login-password --region ${{ secrets.AWS_REGION }} | docker login --username AWS --password-stdin $ECR_REPO_URI 
 
-  #     - name: Login to Amazon ECR
-  #       run: |
-  #         aws ecr get-login-password --region ${{ secrets.AWS_REGION }} | docker login --username AWS --password-stdin ${{steps.export.outputs.ecr_repo_uri}}
-
-  #     - name: Build and Push Docker Image
-  #       run: |
-  #         docker build -t myapp ./app/
-  #         docker tag myapp:latest ${{steps.export.outputs.ecr_repo_uri}}:myapp
-  #         docker push ${{steps.export.outputs.ecr_repo_uri}}:myapp
+      # - name: Build and Push Docker Image
+      #   run: |
+      #     docker build -t myapp ./app/
+      #     docker tag myapp:latest ${{steps.export.outputs.ecr_repo_uri}}:myapp
+      #     docker push ${{steps.export.outputs.ecr_repo_uri}}:myapp
 
       # - name: Update kubeconfig
       #   run: |
