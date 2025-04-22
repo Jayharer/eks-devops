@@ -64,7 +64,7 @@ jobs:
       - name: Outputs from terraform
         id: export 
         run: |
-          ecr_repo_uri=$(echo ${{ needs.terraform.outputs.infrastructure_output }} | jq -r .ecr_repo_url)
+          ecr_repo_uri=$(echo ${{ needs.terraform.outputs.infrastructure_output }} | jq -r .ecr_repo_url | cut -d/ -f1)
           echo "ecr_repo_uri=$ecr_repo_uri" >> $GITHUB_OUTPUT
 
       - name: Checkout Code
@@ -111,3 +111,6 @@ jobs:
       # - name: Deploy to EKS
       #   run: |
       #     kubectl apply -f k8s/
+
+
+# aws ecr get-login-password --region us-east-1 | docker login --username AWS 861936062471.dkr.ecr.us-east-1.amazonaws.com/particle41_ecr_repo
