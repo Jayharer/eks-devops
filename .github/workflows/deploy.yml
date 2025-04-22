@@ -56,16 +56,17 @@ jobs:
     needs: terraform
     steps:
 
-      - name: Output ECR Repo URI 
+      - name: Output Common variables
         run: |
           echo "ECR_REPO_URI=${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ secrets.AWS_REGION }}.amazonaws.com/${{ secrets.ECR_REPO_NAME }}" >> $GITHUB_ENV 
           echo "cluster_name=${{secrets.AWS_EKS_NAME}}" >> $GITHUB_ENV
           echo "aws_region=${{secrets.AWS_REGION}}" >> $GITHUB_ENV
           echo "aws_account_id=${{secrets.AWS_ACCOUNT_ID}}" >> $GITHUB_ENV
           echo "vpc_id=${{ needs.terraform.outputs.vpc_id }}" >> $GITHUB_ENV
-          echo "app_image=${ECR_REPO_URI}:myapp" >> $GITHUB_ENV
+          app_image_tmp="${ECR_REPO_URI}:myapp"
+          echo "app_image=${app_image_tmp}" >> $GITHUB_ENV
 
-      - name: Print ECR URI
+      - name: Print common variables 
         run: |
           echo "Using ECR URI: $ECR_REPO_URI"
           echo "vpc_id: $vpc_id"
@@ -95,29 +96,29 @@ jobs:
         run: |
           aws eks update-kubeconfig --region $aws_region --name $cluster_name
       
-      - name: Install eksctl
-        run: |
-          curl --silent --location "https://github.com/weaveworks/eksctl/releases/latest/download/eksctl_$(uname -s)_amd64.tar.gz" | tar xz -C /tmp
-          sudo mv /tmp/eksctl /usr/local/bin
+      # - name: Install eksctl
+      #   run: |
+      #     curl --silent --location "https://github.com/weaveworks/eksctl/releases/latest/download/eksctl_$(uname -s)_amd64.tar.gz" | tar xz -C /tmp
+      #     sudo mv /tmp/eksctl /usr/local/bin
       
-      - name: associate-iam-oidc-provider
-        run: |
-          eksctl utils associate-iam-oidc-provider --cluster $cluster_name --approve
+      # - name: associate-iam-oidc-provider
+      #   run: |
+      #     eksctl utils associate-iam-oidc-provider --cluster $cluster_name --approve
 
-      - name: create iamserviceaccount and iam role 
-        run: |
-          eksctl create iamserviceaccount --cluster=$cluster_name --namespace=kube-system --name=aws-alb-controller --role-name ALBControllerIAMRole --attach-policy-arn=arn:aws:iam::$aws_account_id:policy/ALBControllerIAMPolicy --override-existing-serviceaccounts  --region $aws_region --approve
+      # - name: create iamserviceaccount and iam role 
+      #   run: |
+      #     eksctl create iamserviceaccount --cluster=$cluster_name --namespace=kube-system --name=aws-alb-controller --role-name ALBControllerIAMRole --attach-policy-arn=arn:aws:iam::$aws_account_id:policy/ALBControllerIAMPolicy --override-existing-serviceaccounts  --region $aws_region --approve
       
-      - name: Install Helm
-        uses: azure/setup-helm@v3
+      # - name: Install Helm
+      #   uses: azure/setup-helm@v3
       
-      - name: Install aws-load-balancer-controller
-        run: |
-          helm repo add eks https://aws.github.io/eks-charts
-          helm repo update eks 
-          helm install aws-load-balancer-controller eks/aws-load-balancer-controller -n kube-system --set clusterName=$cluster_name --set serviceAccount.create=false --set serviceAccount.name=aws-alb-controller --set region=$aws_region --set vpcId=$vpc_id
+      # - name: Install aws-load-balancer-controller
+      #   run: |
+      #     helm repo add eks https://aws.github.io/eks-charts
+      #     helm repo update eks 
+      #     helm install aws-load-balancer-controller eks/aws-load-balancer-controller -n kube-system --set clusterName=$cluster_name --set serviceAccount.create=false --set serviceAccount.name=aws-alb-controller --set region=$aws_region --set vpcId=$vpc_id
 
       - name: Deploy to EKS
         run: |
-          sed -i "s/fake_app_image/$app_image/g" deploy.yml
+          sed -i "s/fake_app_image/$app_image/g" ./k8s/deployment.yml
           kubectl apply -f k8s/
