@@ -47,6 +47,7 @@ jobs:
         outputs=$(terraform output -json)
         infra_output=$(echo "$outputs" | jq -c .infrastructure_output.value)
         echo "infrastructure_output=$infra_output" >> $GITHUB_OUTPUT
+        echo "username=jay" >> $GITHUB_OUTPUT
         echo "$infra_output"
     
     - name: op check
@@ -55,6 +56,7 @@ jobs:
 
     outputs:
         infrastructure_output: ${{steps.export.outputs.infrastructure_output}}
+        username:  ${{steps.export.outputs.username}}
   
   deploy:
     runs-on: ubuntu-latest
@@ -64,6 +66,7 @@ jobs:
       - name: Outputs from terraform
         run: |
           echo "Terraform : ${{ needs.terraform.outputs.infrastructure_output }}"
+          echo "User : ${{ needs.terraform.outputs.username }}"
 
   #     - name: Checkout Code
   #       uses: actions/checkout@v3
