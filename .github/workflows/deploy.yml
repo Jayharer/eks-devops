@@ -40,6 +40,16 @@ jobs:
     - name: Execute Terraform Apply
       run: |
           terraform apply -auto-approve
+    
+    - name: Handle output
+      id: export 
+      run: |
+        outputs=$(terraform output -json)
+        vpc_id_tmp=$(echo "$outputs" | jq -c .infrastructure_output.value.vpc_id)
+        echo "vpc_id=$vpc_id_tmp" >> $GITHUB_OUTPUT
+    
+    outputs:
+        vpc_id: ${{steps.export.outputs.vpc_id}}
   
   deploy:
     runs-on: ubuntu-latest
@@ -52,12 +62,14 @@ jobs:
           echo "cluster_name=${{secrets.AWS_EKS_NAME}}" >> $GITHUB_ENV
           echo "aws_region=${{secrets.AWS_REGION}}" >> $GITHUB_ENV
           echo "aws_account_id=${{secrets.AWS_ACCOUNT_ID}}" >> $GITHUB_ENV
-          echo "vpc_id=$(aws eks describe-cluster --name $cluster_name --query "cluster.resourcesVpcConfig.vpcId" --output text)"
+          echo "vpc_id=${{ needs.terraform.outputs.vpc_id }}" >> $GITHUB_ENV
+          echo "app_image=$ECR_REPO_URI:myapp" >> $GITHUB_ENV
 
       - name: Print ECR URI
         run: |
           echo "Using ECR URI: $ECR_REPO_URI"
           echo "vpc_id: $vpc_id"
+          echo "app_image: $app_image"
 
       - name: Checkout Code
         uses: actions/checkout@v3
@@ -107,4 +119,5 @@ jobs:
 
       - name: Deploy to EKS
         run: |
+          sed -i "s/fake_app_image/$app_image/g" deploy.yml
           kubectl apply -f k8s/
