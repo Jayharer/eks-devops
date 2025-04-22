@@ -63,9 +63,9 @@ jobs:
 
       - name: Outputs from terraform
         run: |
-          echo "${{ needs.terraform.outputs.infrastructure_output }}"
-      # ecr_repo_url=$(echo "${{ needs.terraform.outputs.infrastructure_output }}" | jq -r .ecr_repo_url)
-      # echo "$ecr_repo_url"
+          echo ${{ needs.terraform.outputs.infrastructure_output }}
+          ecr_repo_url=$(echo ${{ needs.terraform.outputs.infrastructure_output }} | jq -r .ecr_repo_url)
+          echo $ecr_repo_url
 
       # - name: Checkout Code
       #   uses: actions/checkout@v3
